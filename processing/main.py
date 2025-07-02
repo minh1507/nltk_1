@@ -2,12 +2,22 @@ import re
 from typing import List, Tuple
 from collections import Counter
 
+try:
+    import nltk
+    from nltk.stem import SnowballStemmer
+    from langdetect import detect
+    NLTK_AVAILABLE = True
+except ImportError:
+    NLTK_AVAILABLE = False
+
 class Processing:
     def __init__(self, text: str = None):
         self.text = text
         self.tokens = None
         self.unique_tokens = None
         self.spaced_text = None
+        self.sorted = False
+        self.stemmed = False
     
     @classmethod
     def create(cls, text: str):
@@ -21,8 +31,29 @@ class Processing:
         return self
     
     def unique(self, count=False, space=False):
-        if self.tokens is not None:
+        # If we already have unique_tokens (e.g., after stemming), work with them
+        if self.unique_tokens is not None:
+            # Check if unique_tokens contains tuples (token, count) or just tokens
+            if self.unique_tokens and isinstance(self.unique_tokens[0], tuple):
+                # Extract tokens from tuples for re-counting
+                source_tokens = [token for token, _ in self.unique_tokens]
+            else:
+                # Already just tokens
+                source_tokens = self.unique_tokens
+                
             # Filter out spaces if space=False
+            if not space:
+                source_tokens = [token for token in source_tokens if not str(token).isspace()]
+            
+            # Recount tokens
+            token_counts = Counter(source_tokens)
+            if count:
+                self.unique_tokens = [(token, count) for token, count in token_counts.items()]
+            else:
+                self.unique_tokens = list(token_counts.keys())
+                
+        elif self.tokens is not None:
+            # Original logic for when working with raw tokens
             filtered_tokens = self.tokens
             if not space:
                 filtered_tokens = [token for token in self.tokens if not token.isspace()]
@@ -35,12 +66,85 @@ class Processing:
         
         return self
     
+    def sort(self, by="alpha", reverse=False):
+        """Sort tokens by different criteria
+        
+        Args:
+            by: Sort criteria - "alpha" (alphabetical), "count" (by count if available)
+            reverse: If True, sort in descending order
+        """
+        if self.unique_tokens is not None:
+            if self.unique_tokens and isinstance(self.unique_tokens[0], tuple):
+                # Sorting tuples (token, count)
+                if by == "count":
+                    self.unique_tokens = sorted(self.unique_tokens, key=lambda x: x[1], reverse=reverse)
+                else:  # by == "alpha"
+                    self.unique_tokens = sorted(self.unique_tokens, key=lambda x: str(x[0]).lower(), reverse=reverse)
+            else:
+                # Sorting just tokens
+                self.unique_tokens = sorted(self.unique_tokens, key=lambda x: str(x).lower(), reverse=reverse)
+        elif self.tokens is not None:
+            # Sorting regular tokens
+            self.tokens = sorted(self.tokens, key=lambda x: str(x).lower(), reverse=reverse)
+        
+        self.sorted = True
+        return self
+    
+    def stem(self, auto_detect=True, language="english"):
+        """Apply Snowball Stemmer to tokens with language detection
+        
+        Args:
+            auto_detect: If True, automatically detect language for each token
+            language: Default language to use if auto_detect is False
+        """
+        if not NLTK_AVAILABLE:
+            print("Warning: NLTK and langdetect are required for stemming. Please install requirements.txt")
+            return self
+        
+        # Supported languages by Snowball Stemmer
+        supported_languages = {
+            'en': 'english', 'es': 'spanish', 'fr': 'french', 'de': 'german',
+            'it': 'italian', 'pt': 'portuguese', 'ru': 'russian', 'ar': 'arabic',
+            'da': 'danish', 'nl': 'dutch', 'fi': 'finnish', 'hu': 'hungarian',
+            'no': 'norwegian', 'ro': 'romanian', 'sv': 'swedish', 'tr': 'turkish'
+        }
+        
+        def detect_and_stem(token_str):
+            # Skip special tokens and non-alphabetic tokens
+            if not re.match(r'^[a-zA-Z]+$', token_str):
+                return token_str
+            
+            try:
+                if auto_detect and len(token_str) > 2:  # Need minimum length for detection
+                    detected_lang = detect(token_str)
+                    lang = supported_languages.get(detected_lang, language)
+                else:
+                    lang = language
+                
+                stemmer = SnowballStemmer(lang)
+                return stemmer.stem(token_str)
+            except:
+                # If detection or stemming fails, return original token
+                return token_str
+        
+        if self.unique_tokens is not None:
+            if self.unique_tokens and isinstance(self.unique_tokens[0], tuple):
+                # Process tuples (token, count)
+                self.unique_tokens = [(detect_and_stem(token), count) for token, count in self.unique_tokens]
+            else:
+                # Process just tokens
+                self.unique_tokens = [detect_and_stem(token) for token in self.unique_tokens]
+        elif self.tokens is not None:
+            # Process regular tokens
+            self.tokens = [detect_and_stem(token) for token in self.tokens]
+        
+        self.stemmed = True
+        return self
+    
     def spacing(self):
-        # Work with whatever data we have: unique_tokens, tokens, or text
         source_data = None
         
         if self.unique_tokens is not None:
-            # If unique_tokens is tuples, extract just the values
             if self.unique_tokens and isinstance(self.unique_tokens[0], tuple):
                 source_data = [token for token, count in self.unique_tokens]
             else:
@@ -48,16 +152,13 @@ class Processing:
         elif self.tokens is not None:
             source_data = self.tokens
         elif self.text is not None:
-            # Split text first
             pattern = r'\[NUMBER\]|\[DATE\]|[a-zA-Z]+|\d+|[^\w\s]'
             source_data = re.findall(pattern, self.text)
         
         if source_data:
-            # Add spaces between tokens, but handle punctuation smartly
             result = []
             for i, token in enumerate(source_data):
                 if i > 0:
-                    # Don't add space before punctuation
                     if not re.match(r'^[^\w\[\]]+$', token):
                         result.append(' ')
                 result.append(token)
@@ -67,22 +168,16 @@ class Processing:
         return self
     
     def result(self):
-        # Always return tuple format
         if self.spaced_text is not None:
-            # Convert spaced text to tuple with single element
             return (self.spaced_text,)
         elif self.unique_tokens is not None:
-            # If already tuples, return as is; if list, convert to tuples
             if self.unique_tokens and isinstance(self.unique_tokens[0], tuple):
                 return tuple(self.unique_tokens)
             else:
-                # Convert list to tuple of single-element tuples
                 return tuple((token,) for token in self.unique_tokens)
         elif self.tokens is not None:
-            # Convert tokens list to tuple of single-element tuples
             return tuple((token,) for token in self.tokens)
         else:
-            # Return original text as single-element tuple
             return (self.text,)
     
     def __str__(self):
