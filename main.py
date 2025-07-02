@@ -27,7 +27,7 @@ print("\n" + "="*50 + "\n")
 tokens = process.split().unique(space=True, count=True).tag().sort(by="alpha", reverse=False).result()
 
 print("Scenario 4 - With POS tagging:")
-Display.table(tokens, count=True, show_tags=True)
+Display.table(tokens, count=False, show_tags=True)
 
 
 
