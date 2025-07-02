@@ -10,24 +10,27 @@ process = Processing.create(filtered)
 # Scenario 1: token base
 tokens = process.split().unique(space=True, count=True).sort(by="alpha", reverse=False).result()
 
-print("Tokens base:")
-Display.table(tokens, count=False)
-
-print("\n" + "="*40 + "\n")
-
-# Scenario 2: token base with count
-tokens = process.split().unique(space=True, count=True).sort(by="alpha", reverse=False).result()
-
-print("Tokens with count:")
+print("Scenario 1 - Token base:")
 Display.table(tokens, count=True)
 
-print("\n" + "="*40 + "\n")
+print("\n" + "="*50 + "\n")
 
-# Scenario 3: token base with count and stemmer
+# Scenario 3: token base with snowball stemmer
 tokens = process.split().stem(auto_detect=True).unique(space=True, count=True).sort(by="alpha", reverse=False).result()
 
-print("Tokens with count:")
+print("Scenario 3 - With stemming:")
 Display.table(tokens, count=True)
+
+print("\n" + "="*50 + "\n")
+
+# Scenario 4: token base with POS tagging
+tokens = process.split().unique(space=True, count=True).tag().sort(by="alpha", reverse=False).result()
+
+print("Scenario 4 - With POS tagging:")
+Display.table(tokens, count=True, show_tags=True)
+
+
+
 
 
 
