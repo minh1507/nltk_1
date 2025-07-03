@@ -1,4 +1,11 @@
-nltk==3.8.1
-langdetect==1.0.9
-spacy==3.7.2
-flask==3.0.0 
+# Global dependencies for project manager and shared utilities
+# Individual exercises have their own requirements.txt files
+
+# Project management utilities
+pathlib2>=2.3.5; python_version < "3.4"
+
+# Web dashboard dependencies (optional - install separately)
+# flask==3.0.0
+# nltk==3.8.1
+# langdetect==1.0.9
+# spacy==3.7.2 

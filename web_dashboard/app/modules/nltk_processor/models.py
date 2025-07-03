@@ -1,6 +1,11 @@
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
+from pathlib import Path
+
+# Add the exercise path to Python path
+project_root = Path(__file__).parent.parent.parent.parent.parent
+exercise_path = project_root / "exercises" / "ex01_nltk_text_processor"
+sys.path.insert(0, str(exercise_path))
 
 from filter import Filter
 from processing import Processing
