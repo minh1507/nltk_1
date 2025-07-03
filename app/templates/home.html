@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Study Dashboard - Home{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Welcome Section -->
+            <div class="hero-section text-center mb-5">
+                <h1 class="display-4 mb-3">
+                    <i class="fas fa-rocket me-3"></i>Welcome to Study Dashboard
+                </h1>
+                <p class="lead text-muted mb-4">
+                    A comprehensive platform for programming exercises and projects
+                </p>
+                <button class="btn btn-primary btn-lg" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
+                    <i class="fas fa-play me-2"></i>Start Learning
+                </button>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="row mb-5">
+                <div class="col-md-3 mb-3">
+                    <div class="card stat-card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-check-circle text-success fa-2x mb-2"></i>
+                            <h5 class="card-title">1</h5>
+                            <p class="card-text text-muted">Completed</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card stat-card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-clock text-warning fa-2x mb-2"></i>
+                            <h5 class="card-title">8</h5>
+                            <p class="card-text text-muted">In Progress</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card stat-card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-book text-info fa-2x mb-2"></i>
+                            <h5 class="card-title">12+</h5>
+                            <p class="card-text text-muted">Total Exercises</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card stat-card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-trophy text-primary fa-2x mb-2"></i>
+                            <h5 class="card-title">8%</h5>
+                            <p class="card-text text-muted">Progress</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Featured Exercises -->
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="mb-4">
+                        <i class="fas fa-star me-2"></i>Featured Exercises
+                    </h3>
+                </div>
+                
+                <div class="col-lg-6 mb-4">
+                    <div class="card exercise-card h-100">
+                        <div class="card-header bg-success text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-brain me-2"></i>NLTK Text Processor
+                                </h5>
+                                <span class="badge bg-light text-success">Completed</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">
+                                Advanced text processing with filtering, tokenization, stemming, and POS tagging using NLTK and spaCy.
+                            </p>
+                            <div class="mb-3">
+                                <small class="text-muted">Technologies:</small>
+                                <div class="mt-1">
+                                    <span class="badge bg-primary me-1">Python</span>
+                                    <span class="badge bg-primary me-1">NLTK</span>
+                                    <span class="badge bg-primary me-1">spaCy</span>
+                                    <span class="badge bg-primary me-1">Flask</span>
+                                </div>
+                            </div>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-success" style="width: 100%"></div>
+                            </div>
+                            <a href="{{ url_for('nltk.index') }}" class="btn btn-success">
+                                <i class="fas fa-play me-2"></i>View Project
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 mb-4">
+                    <div class="card exercise-card h-100">
+                        <div class="card-header bg-warning text-dark">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-chart-line me-2"></i>Data Visualization
+                                </h5>
+                                <span class="badge bg-light text-warning">Coming Soon</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">
+                                Create interactive charts and visualizations using Matplotlib, Plotly, and Seaborn.
+                            </p>
+                            <div class="mb-3">
+                                <small class="text-muted">Technologies:</small>
+                                <div class="mt-1">
+                                    <span class="badge bg-secondary me-1">Python</span>
+                                    <span class="badge bg-secondary me-1">Matplotlib</span>
+                                    <span class="badge bg-secondary me-1">Plotly</span>
+                                    <span class="badge bg-secondary me-1">Pandas</span>
+                                </div>
+                            </div>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-warning" style="width: 0%"></div>
+                            </div>
+                            <button class="btn btn-secondary" disabled>
+                                <i class="fas fa-lock me-2"></i>Coming Soon
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <h3 class="mb-4">
+                        <i class="fas fa-history me-2"></i>Recent Activity
+                    </h3>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="timeline">
+                                <div class="timeline-item">
+                                    <div class="timeline-marker bg-success"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="mb-1">NLTK Text Processor Completed</h6>
+                                        <p class="text-muted mb-0">Finished implementing advanced text processing pipeline with POS tagging</p>
+                                        <small class="text-muted">Today, 11:30 AM</small>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-marker bg-primary"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="mb-1">Flask Web App Created</h6>
+                                        <p class="text-muted mb-0">Built beautiful web interface with MVC architecture</p>
+                                        <small class="text-muted">Today, 10:15 AM</small>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-marker bg-info"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="mb-1">Study Dashboard Initialized</h6>
+                                        <p class="text-muted mb-0">Set up project structure for multiple exercises</p>
+                                        <small class="text-muted">Today, 9:00 AM</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

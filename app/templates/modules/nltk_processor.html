@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block title %}NLTK Text Processor{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-brain me-2 text-primary"></i>NLTK Text Processor
+                    </h2>
+                    <p class="text-muted mb-0">Advanced text processing with filtering, tokenization, and POS tagging</p>
+                </div>
+                <span class="badge bg-success fs-6">
+                    <i class="fas fa-check me-1"></i>Completed
+                </span>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-edit me-2"></i>Input Text
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="textForm">
+                                <div class="mb-3">
+                                    <label for="inputText" class="form-label">Enter your text:</label>
+                                    <textarea 
+                                        class="form-control" 
+                                        id="inputText" 
+                                        rows="8" 
+                                        placeholder="Enter text to process..."
+                                        required>{{ sample_text }}</textarea>
+                                    <div class="form-text">
+                                        <small>Sample text is pre-loaded. Edit or replace with your own text.</small>
+                                    </div>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary btn-lg" id="processBtn">
+                                        <i class="fas fa-cogs me-2"></i>Process Text
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" id="clearBtn">
+                                        <i class="fas fa-trash me-2"></i>Clear
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-table me-2"></i>Processing Results
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="loadingSpinner" class="text-center d-none">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Processing...</span>
+                                </div>
+                                <p class="mt-2 text-muted">Processing your text...</p>
+                            </div>
+
+                            <div id="errorAlert" class="alert alert-danger d-none" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <span id="errorMessage"></span>
+                            </div>
+
+                            <div id="resultsContainer" class="d-none">
+                                <div class="mb-3">
+                                    <span class="badge bg-info text-dark">
+                                        <i class="fas fa-hashtag me-1"></i>
+                                        Total tokens: <span id="totalTokens">0</span>
+                                    </span>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th><i class="fas fa-font me-1"></i>Token</th>
+                                                <th><i class="fas fa-tag me-1"></i>POS Tag</th>
+                                                <th><i class="fas fa-calculator me-1"></i>Count</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="resultsTable">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div id="emptyState" class="text-center text-muted">
+                                <i class="fas fa-arrow-left fa-2x mb-3"></i>
+                                <p>Enter text and click "Process Text" to see results here.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title text-primary">
+                                <i class="fas fa-info-circle me-2"></i>Processing Pipeline (Scenario 4)
+                            </h6>
+                            <div class="row text-center">
+                                <div class="col-md-3">
+                                    <div class="badge bg-secondary mb-2">
+                                        <i class="fas fa-filter"></i>
+                                    </div>
+                                    <p class="small mb-0">Filter dates & numbers</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="badge bg-secondary mb-2">
+                                        <i class="fas fa-cut"></i>
+                                    </div>
+                                    <p class="small mb-0">Tokenize text</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="badge bg-secondary mb-2">
+                                        <i class="fas fa-tags"></i>
+                                    </div>
+                                    <p class="small mb-0">POS tagging</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="badge bg-secondary mb-2">
+                                        <i class="fas fa-sort-alpha-down"></i>
+                                    </div>
+                                    <p class="small mb-0">Sort & count</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const textForm = document.getElementById('textForm');
+    const inputText = document.getElementById('inputText');
+    const processBtn = document.getElementById('processBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const errorAlert = document.getElementById('errorAlert');
+    const errorMessage = document.getElementById('errorMessage');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const emptyState = document.getElementById('emptyState');
+    const resultsTable = document.getElementById('resultsTable');
+    const totalTokens = document.getElementById('totalTokens');
+
+    // Form submission
+    textForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        processText();
+    });
+
+    // Clear button
+    clearBtn.addEventListener('click', function() {
+        inputText.value = '';
+        hideResults();
+        showEmptyState();
+    });
+
+    // Auto-resize textarea
+    inputText.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+    });
+
+    async function processText() {
+        const text = inputText.value.trim();
+        
+        if (!text) {
+            showError('Please enter some text to process');
+            return;
+        }
+
+        showLoading();
+        hideError();
+        hideResults();
+        hideEmptyState();
+
+        try {
+            const response = await fetch('/nltk/process', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: text })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                displayResults(data.tokens, data.total_tokens);
+            } else {
+                showError(data.error || 'Processing failed');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showError('Network error. Please try again.');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    function displayResults(tokens, total) {
+        totalTokens.textContent = total;
+        resultsTable.innerHTML = '';
+
+        tokens.forEach((tokenData, index) => {
+            const row = document.createElement('tr');
+            row.className = 'table-row-animate';
+            row.style.animationDelay = `${index * 0.05}s`;
+
+            const tokenCell = document.createElement('td');
+            const tagCell = document.createElement('td');
+            const countCell = document.createElement('td');
+
+            // Format token
+            let tokenDisplay = tokenData.token;
+            if (tokenData.token.startsWith('[') && tokenData.token.endsWith(']')) {
+                tokenDisplay = `<span class="token-special">${tokenData.token}</span>`;
+            } else if (tokenData.token.trim() === '') {
+                tokenDisplay = '<span class="text-muted fst-italic">[space]</span>';
+            }
+            tokenCell.innerHTML = tokenDisplay;
+
+            // Format POS tag with color coding
+            const tagBadgeClass = getPosTagClass(tokenData.tag);
+            tagCell.innerHTML = `<span class="badge tag-badge ${tagBadgeClass}">${tokenData.tag}</span>`;
+
+            // Format count
+            countCell.innerHTML = `<span class="badge bg-primary">${tokenData.count}</span>`;
+
+            row.appendChild(tokenCell);
+            row.appendChild(tagCell);
+            row.appendChild(countCell);
+            resultsTable.appendChild(row);
+        });
+
+        showResults();
+    }
+
+    function getPosTagClass(tag) {
+        const tagPrefix = tag.substring(0, 2);
+        switch (tagPrefix) {
+            case 'NN': return 'pos-NN';
+            case 'VB': return 'pos-VB';
+            case 'JJ': return 'pos-JJ';
+            case 'DT': return 'pos-DT';
+            case 'IN': return 'pos-IN';
+            case 'CD': return 'pos-CD';
+            case 'SP': return 'pos-SPECIAL';
+            default: return 'bg-secondary';
+        }
+    }
+
+    function showLoading() {
+        loadingSpinner.classList.remove('d-none');
+        processBtn.disabled = true;
+        processBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+    }
+
+    function hideLoading() {
+        loadingSpinner.classList.add('d-none');
+        processBtn.disabled = false;
+        processBtn.innerHTML = '<i class="fas fa-cogs me-2"></i>Process Text';
+    }
+
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorAlert.classList.remove('d-none');
+        hideEmptyState();
+    }
+
+    function hideError() {
+        errorAlert.classList.add('d-none');
+    }
+
+    function showResults() {
+        resultsContainer.classList.remove('d-none');
+        hideEmptyState();
+    }
+
+    function hideResults() {
+        resultsContainer.classList.add('d-none');
+    }
+
+    function showEmptyState() {
+        emptyState.classList.remove('d-none');
+    }
+
+    function hideEmptyState() {
+        emptyState.classList.add('d-none');
+    }
+
+    // Initialize with empty state
+    hideResults();
+    hideError();
+    hideLoading();
+});
+</script>
+{% endblock %} 
